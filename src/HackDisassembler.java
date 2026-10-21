@@ -16,7 +16,7 @@ public class HackDisassembler {
 
         Path input = Paths.get(args[0]);
         String fileName = input.getFileName().toString();
-        Path output = input.resolveSibling(fileName.substring(0, fileName.length() - 5) + "Dis.asm");
+        Path output = input.resolveSibling(fileName.substring(0, fileName.length() - 5) + ".asm");
 
         disassemble(input, output);
         System.out.println("Archivo generado: " + output);
