@@ -5,6 +5,8 @@ public final class Code {
 
     private static final Map<String, String> COMP;
     private static final Map<String, String> JUMP;
+    private static final Map<String, String> BINARY_TO_COMP;
+    private static final Map<String, String> BINARY_TO_JUMP;
 
     static {
         Map<String, String> comp = new HashMap<>();
@@ -48,6 +50,18 @@ public final class Code {
         jump.put("JLE", "110");
         jump.put("JMP", "111");
         JUMP = jump;
+
+        // Tablas inversas para traducir de binario a Assembler.
+        BINARY_TO_COMP = invert(COMP);
+        BINARY_TO_JUMP = invert(JUMP);
+    }
+
+    private static Map<String, String> invert(Map<String, String> table) {
+        Map<String, String> inverse = new HashMap<>();
+        for (Map.Entry<String, String> entry : table.entrySet()) {
+            inverse.put(entry.getValue(), entry.getKey());
+        }
+        return inverse;
     }
 
     private Code() {
@@ -81,6 +95,34 @@ public final class Code {
             throw new IllegalArgumentException("Salto invalido: " + jump);
         }
         return binary;
+    }
+
+    public static String binaryToComp(String bits) {
+        String comp = BINARY_TO_COMP.get(bits);
+        if (comp == null) {
+            throw new IllegalArgumentException("Computo invalido: " + bits);
+        }
+        return comp;
+    }
+
+    public static String binaryToDest(String bits) {
+        if (!bits.matches("[01]{3}")) {
+            throw new IllegalArgumentException("Destino invalido: " + bits);
+        }
+        // Orden A, M, D para producir los mnemonicos canonicos (MD, AM, AD, AMD).
+        String dest = "";
+        if (bits.charAt(0) == '1') dest += "A";
+        if (bits.charAt(2) == '1') dest += "M";
+        if (bits.charAt(1) == '1') dest += "D";
+        return dest;
+    }
+
+    public static String binaryToJump(String bits) {
+        String jump = BINARY_TO_JUMP.get(bits);
+        if (jump == null) {
+            throw new IllegalArgumentException("Salto invalido: " + bits);
+        }
+        return jump;
     }
 
 }
