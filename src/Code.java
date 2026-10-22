@@ -109,11 +109,11 @@ public final class Code {
         if (!bits.matches("[01]{3}")) {
             throw new IllegalArgumentException("Destino invalido: " + bits);
         }
-        // Orden A, M, D para producir los mnemonicos canonicos (MD, AM, AD, AMD).
+        // Orden A, D, M para producir los mnemonicos de la tabla (DM, AM, AD, ADM).
         String dest = "";
         if (bits.charAt(0) == '1') dest += "A";
-        if (bits.charAt(2) == '1') dest += "M";
         if (bits.charAt(1) == '1') dest += "D";
+        if (bits.charAt(2) == '1') dest += "M";
         return dest;
     }
 
