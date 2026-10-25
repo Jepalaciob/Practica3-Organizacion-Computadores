@@ -1,0 +1,4 @@
+# Los scripts deben tener fin de linea LF para que Git Bash los ejecute.
+*.sh text eol=lf
+# Las pruebas se guardan byte a byte (algunas usan CRLF a proposito).
+proyecto3/pruebas/** -text

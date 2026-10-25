@@ -3,6 +3,4 @@
 out/
 
 *.class
-*.asm
-*.hack
 *.iml
