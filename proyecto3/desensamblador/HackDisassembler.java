@@ -1,4 +1,7 @@
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,20 +12,33 @@ import java.util.List;
 public class HackDisassembler {
 
     public static void main(String[] args) throws IOException {
+        // Salida estandar en UTF-8 para que la tilde de "Línea" se vea bien en Git Bash.
+        System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true, "UTF-8"));
+
         if (args.length != 1 || !args[0].endsWith(".hack")) {
-            System.err.println("Uso: java HackDisassembler Prog.hack");
-            return;
+            System.out.println("Uso: ./desensamblador.sh Prog.hack");
+            System.exit(1);
         }
 
+        // Prog.hack -> ProgDis.asm, para no pisar el Prog.asm original.
         Path input = Paths.get(args[0]);
         String fileName = input.getFileName().toString();
-        Path output = input.resolveSibling(fileName.substring(0, fileName.length() - 5) + ".asm");
+        Path output = input.resolveSibling(fileName.substring(0, fileName.length() - 5) + "Dis.asm");
 
-        disassemble(input, output);
+        try {
+            disassemble(input, output);
+        } catch (HackException e) {
+            Files.deleteIfExists(output); // Si hay un error no debe quedar archivo de salida.
+            System.out.println("ERROR *** Línea " + e.getLine() + ": " + e.getMessage());
+            System.exit(1);
+        } catch (IOException e) {
+            System.out.println("ERROR *** No se pudo leer o escribir el archivo: " + e.getMessage());
+            System.exit(1);
+        }
         System.out.println("Archivo generado: " + output);
     }
 
-    public static void disassemble(Path input, Path output) throws IOException {
+    public static void disassemble(Path input, Path output) throws IOException, HackException {
         // Una sola pasada: los simbolos se pierden al ensamblar, asi que
         // las instrucciones A se escriben con su direccion numerica.
         List<String> asmLines = new ArrayList<>();
