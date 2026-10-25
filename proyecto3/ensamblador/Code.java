@@ -4,8 +4,10 @@ import java.util.Map;
 public final class Code {
 
     private static final Map<String, String> COMP;
+    private static final Map<String, String> DEST;
     private static final Map<String, String> JUMP;
     private static final Map<String, String> BINARY_TO_COMP;
+    private static final Map<String, String> BINARY_TO_DEST;
     private static final Map<String, String> BINARY_TO_JUMP;
 
     static {
@@ -40,6 +42,18 @@ public final class Code {
         comp.put("D|M", "1010101");
         COMP = comp;
 
+        // Solo los siete destinos del enunciado: DM, ADM, MA, etc. son errores.
+        Map<String, String> dest = new HashMap<>();
+        dest.put("", "000");
+        dest.put("M", "001");
+        dest.put("D", "010");
+        dest.put("MD", "011");
+        dest.put("A", "100");
+        dest.put("AM", "101");
+        dest.put("AD", "110");
+        dest.put("AMD", "111");
+        DEST = dest;
+
         Map<String, String> jump = new HashMap<>();
         jump.put("", "000");
         jump.put("JGT", "001");
@@ -53,6 +67,7 @@ public final class Code {
 
         // Tablas inversas para traducir de binario a Assembler.
         BINARY_TO_COMP = invert(COMP);
+        BINARY_TO_DEST = invert(DEST);
         BINARY_TO_JUMP = invert(JUMP);
     }
 
@@ -76,17 +91,11 @@ public final class Code {
     }
 
     public static String destToBinary(String dest) {
-        int bits = 0;
-        for (char register : dest.toCharArray()) {
-            switch (register) {
-                case 'A': bits |= 4; break;
-                case 'D': bits |= 2; break;
-                case 'M': bits |= 1; break;
-                default: throw new IllegalArgumentException("Destino invalido: " + dest);
-            }
+        String binary = DEST.get(dest);
+        if (binary == null) {
+            throw new IllegalArgumentException("Destino invalido: " + dest);
         }
-        String binary = Integer.toBinaryString(bits);
-        return "000".substring(binary.length()) + binary;
+        return binary;
     }
 
     public static String jumpToBinary(String jump) {
@@ -106,14 +115,10 @@ public final class Code {
     }
 
     public static String binaryToDest(String bits) {
-        if (!bits.matches("[01]{3}")) {
+        String dest = BINARY_TO_DEST.get(bits);
+        if (dest == null) {
             throw new IllegalArgumentException("Destino invalido: " + bits);
         }
-        // Orden A, M, D para producir MD y AMD, los que aceptan las herramientas de escritorio.
-        String dest = "";
-        if (bits.charAt(0) == '1') dest += "A";
-        if (bits.charAt(2) == '1') dest += "M";
-        if (bits.charAt(1) == '1') dest += "D";
         return dest;
     }
 
