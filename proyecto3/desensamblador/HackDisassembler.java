@@ -49,10 +49,48 @@ public class HackDisassembler {
             n--;
         }
 
-        // Los simbolos se pierden al ensamblar, asi que las instrucciones A se escriben en decimal.
+        // Primera pasada: valida y traduce cada instruccion. Los simbolos se pierden al
+        // ensamblar, asi que las instrucciones A quedan en decimal.
+        String[] asm = new String[n];
+        for (int i = 0; i < n; i++) {
+            asm[i] = translate(lines.get(i), i + 1);
+        }
+
+        // Segunda pasada (regla 9.1): si la instruccion i es C con salto y la i-1 es @v con
+        // v <= n, el salto va a la direccion v y esa @v se escribe con una etiqueta.
+        boolean[] usesLabel = new boolean[n];
+        boolean[] isTarget = new boolean[n + 1];
+        for (int i = 1; i < n; i++) {
+            String current = lines.get(i);
+            String previous = lines.get(i - 1);
+            boolean jumps = current.charAt(0) == '1' && !current.endsWith("000");
+            if (jumps && previous.charAt(0) == '0') {
+                int target = Integer.parseInt(previous, 2);
+                if (target <= n) {
+                    usesLabel[i - 1] = true;
+                    isTarget[target] = true;
+                }
+            }
+        }
+
+        // Una sola etiqueta por destino, nombradas L0, L1, ... en orden de direccion.
+        String[] labels = new String[n + 1];
+        int count = 0;
+        for (int address = 0; address <= n; address++) {
+            if (isTarget[address]) {
+                labels[address] = "L" + count++;
+            }
+        }
+
         List<String> asmLines = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            asmLines.add(translate(lines.get(i), i + 1));
+            if (labels[i] != null) {
+                asmLines.add("(" + labels[i] + ")");
+            }
+            asmLines.add(usesLabel[i] ? "@" + labels[Integer.parseInt(lines.get(i), 2)] : asm[i]);
+        }
+        if (labels[n] != null) {
+            asmLines.add("(" + labels[n] + ")"); // Salto a v = n: la etiqueta va al final del archivo.
         }
 
         Files.write(output, asmLines, StandardCharsets.UTF_8);
