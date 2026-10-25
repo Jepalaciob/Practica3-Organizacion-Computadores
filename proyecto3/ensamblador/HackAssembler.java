@@ -1,4 +1,7 @@
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,23 +12,35 @@ import java.util.List;
 public class HackAssembler {
 
     public static void main(String[] args) throws IOException {
+        // Salida estandar en UTF-8 para que la tilde de "Línea" se vea bien en Git Bash.
+        System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true, "UTF-8"));
+
         if (args.length != 1 || !args[0].endsWith(".asm")) {
-            System.err.println("Uso: java HackAssembler Prog.asm");
-            return;
+            System.out.println("Uso: ./ensamblador.sh Prog.asm");
+            System.exit(1);
         }
 
         Path input = Paths.get(args[0]);
         String fileName = input.getFileName().toString();
         Path output = input.resolveSibling(fileName.substring(0, fileName.length() - 4) + ".hack");
 
-        assemble(input, output);
+        try {
+            assemble(input, output);
+        } catch (HackException e) {
+            Files.deleteIfExists(output); // Si hay un error no debe quedar archivo de salida.
+            System.out.println("ERROR *** Línea " + e.getLine() + ": " + e.getMessage());
+            System.exit(1);
+        } catch (IOException e) {
+            System.out.println("ERROR *** No se pudo leer o escribir el archivo: " + e.getMessage());
+            System.exit(1);
+        }
         System.out.println("Archivo generado: " + output);
     }
 
-    public static void assemble(Path input, Path output) throws IOException {
+    public static void assemble(Path input, Path output) throws IOException, HackException {
         SymbolTable symbols = new SymbolTable();
 
-        // Primera pasada: las etiquetas apuntan a posiciones de la ROM.
+        // Primera pasada: valida cada linea en orden y las etiquetas apuntan a posiciones de la ROM.
         Parser parser = new Parser(input);
         int romAddress = 0;
         while (parser.hasMoreLines()) {
@@ -60,7 +75,7 @@ public class HackAssembler {
                         address = symbols.getAddress(symbol);
                     }
                     if (address < 0 || address > 32767) {
-                        throw new IllegalArgumentException("Direccion fuera de rango: " + address);
+                        throw new HackException(parser.lineNumber(), "dirección fuera de rango: " + address);
                     }
                     binaryLines.add(to16Bits(address));
                     break;

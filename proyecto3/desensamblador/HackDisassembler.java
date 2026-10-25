@@ -44,6 +44,9 @@ public class HackDisassembler {
                 }
                 // Formato: 111a cccc ccdd djjj
                 String comp = Code.binaryToComp(instruction.substring(3, 10));
+                if (comp == null) {
+                    throw new IllegalArgumentException("Instruccion invalida: " + instruction);
+                }
                 String dest = Code.binaryToDest(instruction.substring(10, 13));
                 String jump = Code.binaryToJump(instruction.substring(13, 16));
 

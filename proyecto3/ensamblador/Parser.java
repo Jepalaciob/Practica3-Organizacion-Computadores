@@ -14,15 +14,20 @@ public class Parser {
     }
 
     private final List<String> instructions = new ArrayList<>();
+    private final List<Integer> lineNumbers = new ArrayList<>();
     private int position = 0;
     private String current;
+    private int currentLine;
 
     public Parser(Path input) throws IOException {
-        for (String line : Files.readAllLines(input, StandardCharsets.UTF_8)) {
+        // ISO-8859-1 acepta cualquier byte, asi una tilde en un comentario no detiene la lectura.
+        List<String> lines = Files.readAllLines(input, StandardCharsets.ISO_8859_1);
+        for (int i = 0; i < lines.size(); i++) {
 
-            String instruction = line.split("//", 2)[0].replaceAll("\\s+", "");
+            String instruction = lines.get(i).split("//", 2)[0].replaceAll("\\s+", "");
             if (!instruction.isEmpty()) {
                 instructions.add(instruction);
+                lineNumbers.add(i + 1); // Numero de linea real, contando comentarios y lineas vacias.
             }
 
         }
@@ -32,8 +37,18 @@ public class Parser {
         return position < instructions.size();
     }
 
-    public void advance() {
-        current = instructions.get(position++);
+    public void advance() throws HackException {
+        current = instructions.get(position);
+        currentLine = lineNumbers.get(position);
+        position++;
+
+        if (instructionType() == InstructionType.C_INSTRUCTION) {
+            validateC();
+        }
+    }
+
+    public int lineNumber() {
+        return currentLine;
     }
 
     public InstructionType instructionType() {
@@ -73,5 +88,62 @@ public class Parser {
         int semicolon = current.indexOf(';');
         return semicolon == -1 ? "" : current.substring(semicolon + 1);
     }
-}
 
+    // dest=comp;jump: dest= y ;jump son opcionales, pero si aparecen no pueden estar vacios.
+    private void validateC() throws HackException {
+        int equals = count('=');
+        int semicolons = count(';');
+
+        if (equals > 1) {
+            throw error("la instrucción tiene más de un '='");
+        }
+        if (semicolons > 1) {
+            throw error("la instrucción tiene más de un ';'");
+        }
+        if (equals == 1 && semicolons == 1 && current.indexOf(';') < current.indexOf('=')) {
+            throw error("el ';' aparece antes del '='");
+        }
+        if (equals == 0 && semicolons == 0 && Code.compToBinary(current) == null) {
+            throw error("instrucción no reconocida '" + current + "'");
+        }
+
+        if (equals == 1) {
+            if (dest().isEmpty()) {
+                throw error("destino vacío");
+            }
+            if (Code.destToBinary(dest()) == null) {
+                throw error("destino inválido '" + dest() + "'");
+            }
+        }
+
+        if (comp().isEmpty()) {
+            throw error("cómputo vacío");
+        }
+        if (Code.compToBinary(comp()) == null) {
+            throw error("cómputo inválido '" + comp() + "'");
+        }
+
+        if (semicolons == 1) {
+            if (jump().isEmpty()) {
+                throw error("salto vacío");
+            }
+            if (Code.jumpToBinary(jump()) == null) {
+                throw error("salto inválido '" + jump() + "'");
+            }
+        }
+    }
+
+    private int count(char character) {
+        int total = 0;
+        for (int i = 0; i < current.length(); i++) {
+            if (current.charAt(i) == character) {
+                total++;
+            }
+        }
+        return total;
+    }
+
+    private HackException error(String message) {
+        return new HackException(currentLine, message);
+    }
+}

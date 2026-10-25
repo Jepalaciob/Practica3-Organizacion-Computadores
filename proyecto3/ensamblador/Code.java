@@ -82,52 +82,31 @@ public final class Code {
     private Code() {
     }
 
+    // Cada traduccion devuelve null si el mnemonico o el codigo no esta en la tabla;
+    // quien la llama decide el mensaje de error con su numero de linea.
+
     public static String compToBinary(String comp) {
-        String binary = COMP.get(comp);
-        if (binary == null) {
-            throw new IllegalArgumentException("Computo invalido: " + comp);
-        }
-        return binary;
+        return COMP.get(comp);
     }
 
     public static String destToBinary(String dest) {
-        String binary = DEST.get(dest);
-        if (binary == null) {
-            throw new IllegalArgumentException("Destino invalido: " + dest);
-        }
-        return binary;
+        return DEST.get(dest);
     }
 
     public static String jumpToBinary(String jump) {
-        String binary = JUMP.get(jump);
-        if (binary == null) {
-            throw new IllegalArgumentException("Salto invalido: " + jump);
-        }
-        return binary;
+        return JUMP.get(jump);
     }
 
     public static String binaryToComp(String bits) {
-        String comp = BINARY_TO_COMP.get(bits);
-        if (comp == null) {
-            throw new IllegalArgumentException("Computo invalido: " + bits);
-        }
-        return comp;
+        return BINARY_TO_COMP.get(bits);
     }
 
     public static String binaryToDest(String bits) {
-        String dest = BINARY_TO_DEST.get(bits);
-        if (dest == null) {
-            throw new IllegalArgumentException("Destino invalido: " + bits);
-        }
-        return dest;
+        return BINARY_TO_DEST.get(bits);
     }
 
     public static String binaryToJump(String bits) {
-        String jump = BINARY_TO_JUMP.get(bits);
-        if (jump == null) {
-            throw new IllegalArgumentException("Salto invalido: " + bits);
-        }
-        return jump;
+        return BINARY_TO_JUMP.get(bits);
     }
 
 }
