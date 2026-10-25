@@ -4,8 +4,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Parser {
+
+    // Letras, digitos, _, ., $ y : sin empezar por digito.
+    private static final Pattern SYMBOL = Pattern.compile("[A-Za-z_.$:][A-Za-z0-9_.$:]*");
 
     public enum InstructionType {
         A_INSTRUCTION,
@@ -42,8 +46,10 @@ public class Parser {
         currentLine = lineNumbers.get(position);
         position++;
 
-        if (instructionType() == InstructionType.C_INSTRUCTION) {
-            validateC();
+        switch (instructionType()) {
+            case A_INSTRUCTION: validateA(); break;
+            case L_INSTRUCTION: validateL(); break;
+            case C_INSTRUCTION: validateC(); break;
         }
     }
 
@@ -89,11 +95,54 @@ public class Parser {
         return semicolon == -1 ? "" : current.substring(semicolon + 1);
     }
 
+    // @valor: constante decimal entre 0 y 32767 o un simbolo.
+    private void validateA() throws HackException {
+        String value = current.substring(1);
+
+        if (value.isEmpty()) {
+            throw error("instrucción A sin valor");
+        }
+        if (value.matches("[0-9]+")) {
+            // Se quitan los ceros a la izquierda y se mide el largo para no desbordar el int.
+            String digits = value.replaceFirst("^0+(?=.)", "");
+            if (digits.length() > 5 || Integer.parseInt(digits) > 32767) {
+                throw error("constante fuera de rango '" + value + "' (máximo 32767)");
+            }
+            return;
+        }
+        if (value.matches("-[0-9]+")) {
+            throw error("constante negativa '" + value + "'");
+        }
+        if (Character.isDigit(value.charAt(0))) {
+            throw error("el símbolo '" + value + "' empieza con un dígito");
+        }
+        if (!SYMBOL.matcher(value).matches()) {
+            throw error("símbolo inválido '" + value + "'");
+        }
+    }
+
+    // (NOMBRE): el nombre sigue las mismas reglas de un simbolo.
+    private void validateL() throws HackException {
+        if (!current.endsWith(")")) {
+            throw error("etiqueta sin paréntesis de cierre");
+        }
+        String name = symbol();
+        if (name.isEmpty()) {
+            throw error("etiqueta vacía");
+        }
+        if (!SYMBOL.matcher(name).matches()) {
+            throw error("nombre de etiqueta inválido '" + name + "'");
+        }
+    }
+
     // dest=comp;jump: dest= y ;jump son opcionales, pero si aparecen no pueden estar vacios.
     private void validateC() throws HackException {
         int equals = count('=');
         int semicolons = count(';');
 
+        if (equals == 0 && semicolons == 0 && current.endsWith(")")) {
+            throw error("etiqueta sin paréntesis de apertura");
+        }
         if (equals > 1) {
             throw error("la instrucción tiene más de un '='");
         }

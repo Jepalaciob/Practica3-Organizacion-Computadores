@@ -46,13 +46,21 @@ public class HackAssembler {
         while (parser.hasMoreLines()) {
             parser.advance();
             if (parser.instructionType() == Parser.InstructionType.L_INSTRUCTION) {
-                symbols.addEntry(parser.symbol(), romAddress);
+                String label = parser.symbol();
+                if (symbols.isPredefined(label)) {
+                    throw new HackException(parser.lineNumber(), "la etiqueta '" + label + "' es un símbolo predefinido");
+                }
+                if (symbols.contains(label)) {
+                    throw new HackException(parser.lineNumber(), "la etiqueta '" + label + "' ya fue declarada");
+                }
+                symbols.addEntry(label, romAddress);
             } else {
                 romAddress++;
             }
         }
 
         // Segunda pasada: traduce instrucciones y asigna RAM a variables.
+        // Todos los errores ya se detectaron en la primera, en orden de lineas.
         parser = new Parser(input);
         int nextVariableAddress = 16;
         List<String> binaryLines = new ArrayList<>();
@@ -73,9 +81,6 @@ public class HackAssembler {
                             symbols.addEntry(symbol, nextVariableAddress++);
                         }
                         address = symbols.getAddress(symbol);
-                    }
-                    if (address < 0 || address > 32767) {
-                        throw new HackException(parser.lineNumber(), "dirección fuera de rango: " + address);
                     }
                     binaryLines.add(to16Bits(address));
                     break;

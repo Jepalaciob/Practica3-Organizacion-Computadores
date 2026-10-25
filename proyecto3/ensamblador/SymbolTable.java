@@ -1,9 +1,12 @@
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class SymbolTable {
 
     private final Map<String, Integer> symbols = new HashMap<>();
+    private final Set<String> predefined;
 
     public SymbolTable() {
         for (int i = 0; i <= 15; i++) {
@@ -17,6 +20,12 @@ public class SymbolTable {
         symbols.put("THAT", 4);
         symbols.put("SCREEN", 16384);
         symbols.put("KBD", 24576);
+
+        predefined = new HashSet<>(symbols.keySet());
+    }
+
+    public boolean isPredefined(String symbol) {
+        return predefined.contains(symbol);
     }
 
     public void addEntry(String symbol, int address) {
