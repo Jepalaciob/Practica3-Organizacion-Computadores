@@ -39,40 +39,56 @@ public class HackDisassembler {
     }
 
     public static void disassemble(Path input, Path output) throws IOException, HackException {
-        // Una sola pasada: los simbolos se pierden al ensamblar, asi que
-        // las instrucciones A se escriben con su direccion numerica.
+        // Se lee sin recortar: los espacios al final y las lineas vacias en medio son errores.
+        // ISO-8859-1 acepta cualquier byte, asi un caracter raro se reporta como error y no como excepcion.
+        List<String> lines = Files.readAllLines(input, StandardCharsets.ISO_8859_1);
+
+        // El salto de linea final es opcional: solo se ignoran las lineas vacias del final.
+        int n = lines.size();
+        while (n > 0 && lines.get(n - 1).isEmpty()) {
+            n--;
+        }
+
+        // Los simbolos se pierden al ensamblar, asi que las instrucciones A se escriben en decimal.
         List<String> asmLines = new ArrayList<>();
-
-        for (String line : Files.readAllLines(input, StandardCharsets.UTF_8)) {
-            String instruction = line.replaceAll("\\s+", "");
-            if (instruction.isEmpty()) {
-                continue;
-            }
-            if (!instruction.matches("[01]{16}")) {
-                throw new IllegalArgumentException("Instruccion invalida: " + instruction);
-            }
-
-            if (instruction.charAt(0) == '0') {
-                asmLines.add("@" + Integer.parseInt(instruction, 2));
-            } else {
-                if (!instruction.startsWith("111")) {
-                    throw new IllegalArgumentException("Instruccion invalida: " + instruction);
-                }
-                // Formato: 111a cccc ccdd djjj
-                String comp = Code.binaryToComp(instruction.substring(3, 10));
-                if (comp == null) {
-                    throw new IllegalArgumentException("Instruccion invalida: " + instruction);
-                }
-                String dest = Code.binaryToDest(instruction.substring(10, 13));
-                String jump = Code.binaryToJump(instruction.substring(13, 16));
-
-                String asm = (dest.isEmpty() ? "" : dest + "=")
-                        + comp
-                        + (jump.isEmpty() ? "" : ";" + jump);
-                asmLines.add(asm);
-            }
+        for (int i = 0; i < n; i++) {
+            asmLines.add(translate(lines.get(i), i + 1));
         }
 
         Files.write(output, asmLines, StandardCharsets.UTF_8);
+    }
+
+    private static String translate(String instruction, int line) throws HackException {
+        if (instruction.isEmpty()) {
+            throw new HackException(line, "línea vacía");
+        }
+        if (instruction.length() != 16) {
+            throw new HackException(line, "la instrucción tiene " + instruction.length() + " caracteres y debe tener 16");
+        }
+        for (char bit : instruction.toCharArray()) {
+            if (bit != '0' && bit != '1') {
+                throw new HackException(line, "carácter inválido '" + bit + "', solo se permiten 0 y 1");
+            }
+        }
+
+        if (instruction.charAt(0) == '0') {
+            return "@" + Integer.parseInt(instruction, 2);
+        }
+
+        // Formato: 111a cccc ccdd djjj
+        if (!instruction.startsWith("111")) {
+            throw new HackException(line, "instrucción C con bits 14 y 13 en '" + instruction.substring(1, 3) + "', deben ser 11");
+        }
+        String comp = Code.binaryToComp(instruction.substring(3, 10));
+        if (comp == null) {
+            throw new HackException(line, "cómputo inválido '" + instruction.substring(3, 10) + "'");
+        }
+        // Los 8 valores posibles de dest y de jump existen en las tablas.
+        String dest = Code.binaryToDest(instruction.substring(10, 13));
+        String jump = Code.binaryToJump(instruction.substring(13, 16));
+
+        return (dest.isEmpty() ? "" : dest + "=")
+                + comp
+                + (jump.isEmpty() ? "" : ";" + jump);
     }
 }
