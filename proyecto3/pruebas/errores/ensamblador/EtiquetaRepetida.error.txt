@@ -1,0 +1,1 @@
+ERROR *** Línea 5: la etiqueta 'BUCLE' ya fue declarada

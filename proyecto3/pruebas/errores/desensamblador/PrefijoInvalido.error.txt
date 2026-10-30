@@ -1,0 +1,1 @@
+ERROR *** Línea 2: instrucción C con bits 14 y 13 en '01', deben ser 11

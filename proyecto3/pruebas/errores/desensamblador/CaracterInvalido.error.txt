@@ -1,0 +1,1 @@
+ERROR *** Línea 2: carácter inválido '2', solo se permiten 0 y 1

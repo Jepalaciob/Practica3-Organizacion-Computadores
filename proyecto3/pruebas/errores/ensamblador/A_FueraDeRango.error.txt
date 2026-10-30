@@ -1,0 +1,1 @@
+ERROR *** Línea 4: constante fuera de rango '32768' (máximo 32767)
