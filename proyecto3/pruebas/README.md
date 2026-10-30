@@ -7,21 +7,11 @@ esperado para cada entrada inválida.
 
 ## Ejecución
 
-Desde la carpeta `proyecto3/` en Git Bash:
+Desde la carpeta `proyecto3/` en Git Bash, compile y compare los resultados de
+un caso válido:
 
 ```bash
 ./compilar.sh
-./pruebas/verificar.sh
-```
-
-El script ejecuta las pruebas en una carpeta temporal, compara los resultados
-ignorando diferencias de fin de línea y comprueba la ida y vuelta de los
-archivos del desensamblador. Para los errores verifica el mensaje, el código
-de salida y que no se genere un archivo de salida.
-
-También es posible ejecutar un caso válido y compararlo manualmente:
-
-```bash
 ./ensamblador.sh pruebas/ensamblador/Doble.asm
 diff --strip-trailing-cr pruebas/ensamblador/Doble.hack pruebas/ensamblador/Doble.esperado.hack
 ./desensamblador.sh pruebas/desensamblador/SaltoFinal.hack
@@ -31,8 +21,7 @@ diff --strip-trailing-cr pruebas/desensamblador/SaltoFinalDis.hack pruebas/desen
 ```
 
 Si las comparaciones coinciden, `diff` no muestra diferencias. Estos comandos
-manuales generan archivos junto a las entradas. El script de pruebas evita
-modificar las carpetas de casos.
+generan archivos junto a las entradas.
 
 ## Ensamblador: programas válidos
 

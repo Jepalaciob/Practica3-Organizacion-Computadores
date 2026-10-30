@@ -63,9 +63,7 @@ ejemplo, si `@temporal` aparece primero y `@copia` después, sus direcciones son
 16 y 17 respectivamente.
 
 El campo de una instrucción A representa direcciones de 15 bits, entre 0 y
-32767. La implementación valida ese rango para las constantes numéricas, pero
-no comprueba el desbordamiento de las direcciones asignadas automáticamente a
-etiquetas o variables; los casos validados no agotan ese espacio.
+32767. La implementación valida ese rango para las constantes numéricas.
 
 ## Generación de etiquetas
 
@@ -122,45 +120,15 @@ Las categorías de error se detectan así:
 | Desensamblador | Bits 14–13 | Una instrucción C debe empezar por `111`. |
 | Desensamblador | Cómputo | Los siete bits de `comp` deben estar en la tabla inversa. |
 
-El desensamblador admite finales de línea LF o CRLF y un salto final opcional;
-un retorno de carro aislado no separa instrucciones y una línea vacía adicional
-no tiene 16 bits. El analizador del ensamblador elimina espacios y tabulaciones;
-un carácter de control como la tabulación vertical se conserva dentro de la
-línea y puede producir un error. Si ya existe un archivo con el nombre de salida
-y se encuentra un error de entrada, el programa lo elimina. Para errores de
-lectura o escritura se muestra un mensaje de E/S.
-
 ## Pruebas
 
 La carpeta [`pruebas/`](../pruebas/) contiene tres programas válidos propios
 para cada traductor y casos de error para las categorías anteriores. El
 [catálogo de pruebas](../pruebas/README.md) identifica cada entrada y su
-resultado esperado. Desde `proyecto3/` en Git Bash se ejecutan con:
-
-```bash
-./compilar.sh
-./pruebas/verificar.sh
-```
-
-El verificador trabaja en una carpeta temporal. Compara los resultados con los
-archivos esperados, comprueba que cada desensamblado vuelva a ensamblarse con la
-misma secuencia de instrucciones y, para errores, verifica el mensaje, el código
-de salida y la ausencia del archivo generado. Las comparaciones normalizan
-CRLF y LF y el salto final opcional.
-
-En una copia limpia del proyecto, sin clases compiladas y en una ruta con
-espacios, se compilaron los programas y pasaron **22 casos propios**: seis
-programas válidos y 16 entradas inválidas. También se realizaron estas
-comprobaciones adicionales:
-
-- Se compararon las 65 536 palabras de 16 bits con tablas independientes: las
-  34 560 instrucciones válidas se tradujeron como se esperaba y las 30 976
-  inválidas produjeron una excepción con el número de línea correcto. Esta
-  comprobación invocó el traductor de instrucciones directamente por reflexión.
-- Se comprobaron 30 ejemplos de errores de ensamblador del enunciado, con su
-  formato, número de línea, código de salida y ausencia de archivo generado.
-- Se verificaron 14 casos de fin de línea y fin de archivo, dos caracteres de
-  control adicionales y ocho casos de argumentos y rutas de los scripts.
+resultado esperado e incluye ejemplos de ejecución y comparación. En las
+pruebas realizadas, las salidas coincidieron con los resultados esperados; para
+los errores se verificaron el mensaje, el código de salida y la ausencia del
+archivo generado.
 
 ### Comparación con las herramientas oficiales
 
