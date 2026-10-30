@@ -62,6 +62,8 @@ Cuando la traducción termina correctamente, el código de salida es cero.
 
 Los casos propios, su resultado esperado y las instrucciones de comprobación
 están en [`pruebas/README.md`](pruebas/README.md).
+El diseño, el manejo de errores y el análisis del desensamblado se explican en
+[`DOCUMENTACION/INFORME.md`](DOCUMENTACION/INFORME.md).
 
 ## Estructura del código
 
