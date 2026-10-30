@@ -39,21 +39,20 @@ public class HackDisassembler {
     }
 
     public static void disassemble(Path input, Path output) throws IOException, HackException {
-        // Se lee sin recortar: los espacios al final y las lineas vacias en medio son errores.
+        // Se lee sin recortar: los espacios al final y las lineas vacias son errores.
         // ISO-8859-1 acepta cualquier byte, asi un caracter raro se reporta como error y no como excepcion.
-        List<String> lines = Files.readAllLines(input, StandardCharsets.ISO_8859_1);
+        String[] lines = Files.readString(input, StandardCharsets.ISO_8859_1).split("\\r?\\n", -1);
 
-        // El salto de linea final es opcional: solo se ignoran las lineas vacias del final.
-        int n = lines.size();
-        while (n > 0 && lines.get(n - 1).isEmpty()) {
-            n--;
+        int n = lines.length;
+        if (lines[n - 1].isEmpty()) {
+            n--; // Solo se descarta el segmento vacio que deja el salto final opcional.
         }
 
         // Primera pasada: valida y traduce cada instruccion. Los simbolos se pierden al
         // ensamblar, asi que las instrucciones A quedan en decimal.
         String[] asm = new String[n];
         for (int i = 0; i < n; i++) {
-            asm[i] = translate(lines.get(i), i + 1);
+            asm[i] = translate(lines[i], i + 1);
         }
 
         // Segunda pasada (regla 9.1): si la instruccion i es C con salto y la i-1 es @v con
@@ -61,8 +60,8 @@ public class HackDisassembler {
         boolean[] usesLabel = new boolean[n];
         boolean[] isTarget = new boolean[n + 1];
         for (int i = 1; i < n; i++) {
-            String current = lines.get(i);
-            String previous = lines.get(i - 1);
+            String current = lines[i];
+            String previous = lines[i - 1];
             boolean jumps = current.charAt(0) == '1' && !current.endsWith("000");
             if (jumps && previous.charAt(0) == '0') {
                 int target = Integer.parseInt(previous, 2);
@@ -87,7 +86,7 @@ public class HackDisassembler {
             if (labels[i] != null) {
                 asmLines.add("(" + labels[i] + ")");
             }
-            asmLines.add(usesLabel[i] ? "@" + labels[Integer.parseInt(lines.get(i), 2)] : asm[i]);
+            asmLines.add(usesLabel[i] ? "@" + labels[Integer.parseInt(lines[i], 2)] : asm[i]);
         }
         if (labels[n] != null) {
             asmLines.add("(" + labels[n] + ")"); // Salto a v = n: la etiqueta va al final del archivo.

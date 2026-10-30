@@ -1,0 +1,1 @@
+ERROR *** Línea 4: el símbolo '12' empieza con un dígito

@@ -64,14 +64,15 @@ salida. Los números incluyen las líneas de comentarios y las líneas vacías.
 | Entrada | Categoría | Resultado esperado |
 | --- | --- | --- |
 | `A_FueraDeRango.asm` | Instrucción A | Línea 4: constante `32768` fuera de rango. [`Mensaje`](errores/ensamblador/A_FueraDeRango.error.txt) |
+| `ControlInvalido.asm` | Instrucción A | Línea 4: símbolo que empieza por dígito y contiene un carácter de control. [`Mensaje`](errores/ensamblador/ControlInvalido.error.txt) |
 | `EtiquetaRepetida.asm` | Etiqueta | Línea 5: etiqueta `BUCLE` declarada dos veces. [`Mensaje`](errores/ensamblador/EtiquetaRepetida.error.txt) |
 | `DestinoInvalido.asm` | Destino | Línea 4: destino `DM` inválido. [`Mensaje`](errores/ensamblador/DestinoInvalido.error.txt) |
 | `ComputoInvalido.asm` | Cómputo | Línea 4: cómputo `A+D` inválido. [`Mensaje`](errores/ensamblador/ComputoInvalido.error.txt) |
 | `SaltoInvalido.asm` | Salto | Línea 4: salto `jmp` inválido. [`Mensaje`](errores/ensamblador/SaltoInvalido.error.txt) |
 | `EstructuraInvalida.asm` | Estructura | Línea 4: más de un `=`. [`Mensaje`](errores/ensamblador/EstructuraInvalida.error.txt) |
 
-Estos casos contienen además un error posterior, para comprobar que se informa
-el primero en orden de línea.
+Varios de estos casos contienen además un error posterior, para comprobar que
+se informa el primero en orden de línea.
 
 ## Desensamblador: casos de error
 
@@ -82,8 +83,11 @@ salida.
 | Entrada | Categoría | Resultado esperado |
 | --- | --- | --- |
 | `LongitudInvalida.hack` | Longitud | Línea 2: instrucción de 15 caracteres. [`Mensaje`](errores/desensamblador/LongitudInvalida.error.txt) |
+| `RetornoAislado.hack` | Longitud | Línea 1: dos instrucciones separadas por un retorno de carro aislado forman una línea de 33 caracteres. [`Mensaje`](errores/desensamblador/RetornoAislado.error.txt) |
 | `CaracterInvalido.hack` | Caracteres | Línea 2: carácter `2` inválido. [`Mensaje`](errores/desensamblador/CaracterInvalido.error.txt) |
 | `PrefijoInvalido.hack` | Bits 14–13 | Línea 2: prefijo de instrucción C inválido. [`Mensaje`](errores/desensamblador/PrefijoInvalido.error.txt) |
 | `ComputoInvalido.hack` | Cómputo | Línea 2: código de cómputo inválido. [`Mensaje`](errores/desensamblador/ComputoInvalido.error.txt) |
 | `LineaVacia.hack` | Longitud | Línea 2: línea vacía en medio del archivo. [`Mensaje`](errores/desensamblador/LineaVacia.error.txt) |
+| `LineaVaciaFinal.hack` | Longitud | Línea 2: línea vacía adicional al final del archivo. [`Mensaje`](errores/desensamblador/LineaVaciaFinal.error.txt) |
+| `SoloLineasVacias.hack` | Longitud | Línea 1: archivo formado por líneas vacías con finales CRLF. [`Mensaje`](errores/desensamblador/SoloLineasVacias.error.txt) |
 | `EspacioFinal.hack` | Longitud | Línea 2: instrucción con un espacio adicional. [`Mensaje`](errores/desensamblador/EspacioFinal.error.txt) |

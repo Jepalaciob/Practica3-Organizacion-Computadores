@@ -28,7 +28,7 @@ public class Parser {
         List<String> lines = Files.readAllLines(input, StandardCharsets.ISO_8859_1);
         for (int i = 0; i < lines.size(); i++) {
 
-            String instruction = lines.get(i).split("//", 2)[0].replaceAll("\\s+", "");
+            String instruction = lines.get(i).split("//", 2)[0].replaceAll("[ \\t]+", "");
             if (!instruction.isEmpty()) {
                 instructions.add(instruction);
                 lineNumbers.add(i + 1); // Numero de linea real, contando comentarios y lineas vacias.
